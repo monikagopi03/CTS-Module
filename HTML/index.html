@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Community Event Portal</title>
+  <style>
+    #welcomeBanner {
+      background-color: blue;
+      color: white;
+      padding: 1em;
+      margin-bottom: 1em;
+    }
+    .highlight {
+      font-weight: bold;
+      background-color: yellow;
+    }
+    table img.event-image {
+      border: 2px solid #333;
+      width: 150px;
+      height: 100px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    table img.event-image.enlarged {
+      transform: scale(2);
+      z-index: 100;
+      position: relative;
+    }
+    form {
+      margin-top: 2em;
+      max-width: 400px;
+    }
+    form input, form select, form textarea {
+      display: block;
+      margin-bottom: 1em;
+      width: 100%;
+      padding: 0.5em;
+    }
+    output {
+      display: block;
+      margin-top: 1em;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#home">Home</a> |
+    <a href="#events">Events</a> |
+    <a href="#contact">Contact</a> |
+    <a href="help.html" target="_blank">Help</a>
+  </nav>
+
+  <main>
+    <section id="home">
+      <div id="welcomeBanner">
+        Welcome back, <span class="highlight">Community Member!</span> 
+        <span style="color: red; font-weight: bold;">Special offer: Free entry to the next event!</span>
+      </div>
+    </section>
+
+    <section id="events">
+      <h2>Community Event Gallery</h2>
+      <table>
+        <tr>
+          <td>
+            <img src="event1.jpg" alt="Park Cleanup" title="Park Cleanup Event" class="event-image" ondblclick="toggleImageSize(this)">
+            <caption>Park Cleanup</caption>
+          </td>
+          <td>
+            <img src="event2.jpg" alt="Charity Run" title="Charity Run 5K" class="event-image" ondblclick="toggleImageSize(this)">
+            <caption>Charity Run</caption>
+          </td>
+          <td>
+            <img src="event3.jpg" alt="Food Drive" title="Local Food Drive" class="event-image" ondblclick="toggleImageSize(this)">
+            <caption>Food Drive</caption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="event4.jpg" alt="Art Fair" title="Annual Art Fair" class="event-image" ondblclick="toggleImageSize(this)">
+            <caption>Art Fair</caption>
+          </td>
+          <td>
+            <img src="event5.jpg" alt="Concert" title="Community Concert" class="event-image" ondblclick="toggleImageSize(this)">
+            <caption>Concert</caption>
+          </td>
+          <td>
+            <img src="event6.jpg" alt="Workshop" title="Craft Workshop" class="event-image" ondblclick="toggleImageSize(this)">
+            <caption>Workshop</caption>
+          </td>
+        </tr>
+      </table>
+
+      <h3>Register for Events</h3>
+      <form id="registrationForm">
+        <input type="text" name="name" placeholder="Your Full Name" required autofocus />
+        <input type="email" name="email" placeholder="Email Address" required />
+        <input type="date" name="date" required />
+        <select name="eventType" id="eventType" required onchange="showFee()">
+          <option value="">Select Event Type</option>
+          <option value="cleanup">Park Cleanup</option>
+          <option value="run">Charity Run</option>
+          <option value="fooddrive">Food Drive</option>
+        </select>
+        <textarea name="message" id="feedback" placeholder="Additional Message" rows="4" onkeyup="countChars()" required></textarea>
+        <input type="tel" id="phone" name="phone" placeholder="Phone Number" onblur="validatePhone()" />
+        <button type="submit" onclick="submitForm(event)">Register</button>
+        <output id="confirmation"></output>
+        <div id="feeDisplay"></div>
+        <div id="charCount">Characters typed: 0</div>
+      </form>
+    </section>
+
+    <section id="contact">
+      <h2>Contact Us</h2>
+      <button onclick="findNearbyEvents()">Find Nearby Events</button>
+      <div id="geoOutput"></div>
+      <video id="promoVideo" width="320" height="240" controls oncanplay="videoReady()">
+        <source src="promo.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      <div id="videoStatus"></div>
+      <button onclick="clearPreferences()">Clear Preferences</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Local Community Event Portal</p>
+  </footer>
+
+  <script>
+    function toggleImageSize(img) {
+      img.classList.toggle('enlarged');
+    }
+
+    function validatePhone() {
+      const phone = document.getElementById('phone').value;
+      const phonePattern = /^\d{10}$/;
+      if (!phonePattern.test(phone)) {
+        alert('Please enter a valid 10-digit phone number');
+        document.getElementById('phone').focus();
+      }
+    }
+
+    function showFee() {
+      const fees = {
+        cleanup: '$10',
+        run: '$25',
+        fooddrive: 'Free'
+      };
+      const select = document.getElementById('eventType');
+      const fee = fees[select.value] || '';
+      document.getElementById('feeDisplay').textContent = fee ? `Event Fee: ${fee}` : '';
+      if (select.value) {
+        localStorage.setItem('preferredEvent', select.value);
+      }
+    }
+
+    function submitForm(event) {
+      event.preventDefault();
+      document.getElementById('confirmation').textContent = 'Thank you for registering!';
+    }
+
+    function countChars() {
+      const feedback = document.getElementById('feedback');
+      const count = feedback.value.length;
+      document.getElementById('charCount').textContent = `Characters typed: ${count}`;
+    }
+
+    function videoReady() {
+      document.getElementById('videoStatus').textContent = 'Video ready to play';
+    }
+
+    window.onbeforeunload = function(e) {
+      return 'You have unsaved changes. Are you sure you want to leave?';
+    };
+
+    function clearPreferences() {
+      localStorage.clear();
+      sessionStorage.clear();
+      alert('Preferences cleared');
+      document.getElementById('eventType').value = '';
+      document.getElementById('feeDisplay').textContent = '';
+    }
+
+    function findNearbyEvents() {
+      const output = document.getElementById('geoOutput');
+      if (!navigator.geolocation) {
+        output.textContent = 'Geolocation is not supported by your browser';
+        return;
+      }
+
+      function success(position) {
+        const latitude = position.coords.latitude.toFixed(4);
+        const longitude = position.coords.longitude.toFixed(4);
+        output.textContent = `Your coordinates: Latitude ${latitude}, Longitude ${longitude}`;
+      }
+
+      function error(err) {
+        if (err.code === err.PERMISSION_DENIED) {
+          output.textContent = 'Permission denied. Cannot get location.';
+        } else if (err.code === err.TIMEOUT) {
+          output.textContent = 'Timeout while getting location.';
+        } else {
+          output.textContent = 'Unable to retrieve location.';
+        }
+      }
+
+      navigator.geolocation.getCurrentPosition(success, error, { enableHighAccuracy: true, timeout: 5000 });
+    }
+
+    window.onload = function() {
+      const preferred = localStorage.getItem('preferredEvent');
+      if (preferred) {
+        document.getElementById('eventType').value = preferred;
+        showFee();
+      }
+    };
+  </script>
+</body>
+</html>
